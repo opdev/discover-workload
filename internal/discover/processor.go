@@ -26,7 +26,7 @@ func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
 					continueRunning = false
 					break
 				}
-				m.DiscoveredImages = processContainers(p, logger)
+				m.DiscoveredImages = append(m.DiscoveredImages, processContainers(p, logger)...)
 			case <-ctx.Done():
 				logger.Debug("processorFn completing because the context completed")
 				continueRunning = false
