@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 
+	"github.com/opdev/discover-workload/discovery"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -15,7 +16,7 @@ import (
 // initContainers, and ephemeralContainers.
 func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
 	return func(ctx context.Context, source <-chan *corev1.Pod, logger *slog.Logger) error {
-		m := Manifest{}
+		m := discovery.Manifest{}
 
 		continueRunning := true
 		for continueRunning {
@@ -53,15 +54,15 @@ func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
 func processContainers(
 	p *corev1.Pod,
 	logger *slog.Logger,
-) []DiscoveredImage {
-	found := make([]DiscoveredImage, 0, len(p.Spec.InitContainers)+len(p.Spec.EphemeralContainers)+len(p.Spec.Containers))
+) []discovery.DiscoveredImage {
+	found := make([]discovery.DiscoveredImage, 0, len(p.Spec.InitContainers)+len(p.Spec.EphemeralContainers)+len(p.Spec.Containers))
 	logger.Debug("found a pod!", "name", p.Name)
 	for _, c := range p.Spec.Containers {
 		logger.Debug("found a container", "name", c.Name, "pod", p.Name, "image", c.Image)
 		// TODO: These images should only be considered if they're fully qualified.
 		found = append(
 			found,
-			DiscoveredImage{
+			discovery.DiscoveredImage{
 				PodName:       p.Name,
 				ContainerName: c.Name,
 				Image:         c.Image,
@@ -73,7 +74,7 @@ func processContainers(
 		// TODO: These images should only be considered if they're fully qualified.
 		found = append(
 			found,
-			DiscoveredImage{
+			discovery.DiscoveredImage{
 				PodName:       p.Name,
 				ContainerName: c.Name,
 				Image:         c.Image,
@@ -85,7 +86,7 @@ func processContainers(
 		// TODO: These images should only be considered if they're fully qualified.
 		found = append(
 			found,
-			DiscoveredImage{
+			discovery.DiscoveredImage{
 				PodName:       p.Name,
 				ContainerName: c.Name,
 				Image:         c.Image,

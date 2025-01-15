@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/opdev/discover-workload/discovery"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -80,7 +81,7 @@ func TestManifestJSONProcessor(t *testing.T) {
 func TestContainerProcessing(t *testing.T) {
 	testcases := map[string]struct {
 		input    corev1.Pod
-		expected []DiscoveredImage
+		expected []discovery.DiscoveredImage
 	}{
 		"initContainers only": {
 			input: corev1.Pod{
@@ -94,7 +95,7 @@ func TestContainerProcessing(t *testing.T) {
 					},
 				},
 			},
-			expected: []DiscoveredImage{
+			expected: []discovery.DiscoveredImage{
 				{
 					PodName:       "init-podname",
 					ContainerName: "init-cname",
@@ -114,7 +115,7 @@ func TestContainerProcessing(t *testing.T) {
 					},
 				},
 			},
-			expected: []DiscoveredImage{
+			expected: []discovery.DiscoveredImage{
 				{
 					PodName:       "c-podname",
 					ContainerName: "c-cname",
@@ -136,7 +137,7 @@ func TestContainerProcessing(t *testing.T) {
 					},
 				},
 			},
-			expected: []DiscoveredImage{
+			expected: []discovery.DiscoveredImage{
 				{
 					PodName:       "eph-podname",
 					ContainerName: "eph-cname",
@@ -170,7 +171,7 @@ func TestContainerProcessing(t *testing.T) {
 					},
 				},
 			},
-			expected: []DiscoveredImage{
+			expected: []discovery.DiscoveredImage{
 				{
 					PodName:       "all-podname",
 					ContainerName: "c-cname",

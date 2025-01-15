@@ -22,10 +22,7 @@ const (
 	longDesc  = shortDesc + `
 
 Deploy your workload to a given cluster, and then run this utility to detect
-exactly what images are being used by the deployed workloads.
-
-With the full list of images available to you, you can then utilize Preflight to
-certify the list of images.`
+exactly what images are being used by the deployed workloads.`
 )
 
 type config struct {
