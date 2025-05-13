@@ -24,3 +24,6 @@ bin
 
 # Vagrant
 .vagrant
+
+# Project binary
+discover-workload

@@ -1,0 +1,70 @@
+version: "2"
+output:
+  formats:
+    tab:
+      path: stdout
+      colors: false
+linters:
+  enable:
+    - asciicheck
+    - depguard
+    - importas
+    - misspell
+    - revive
+    - staticcheck
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          files:
+            - ""
+          allow:
+            - $gostd
+    importas:
+      alias:
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/apimachinery/pkg/api/errors
+          alias: apierrors
+    revive:
+      rules:
+        - name: dot-imports
+          severity: warning
+          disabled: true
+    staticcheck:
+      dot-import-whitelist:
+        - github.com/onsi/gomega
+        - github.com/onsi/ginkgo
+        - github.com/onsi/ginkgo/v2
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/opdev/discover-workload
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

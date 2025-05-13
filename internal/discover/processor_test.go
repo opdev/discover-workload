@@ -8,12 +8,14 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/opdev/discover-workload/discovery"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/opdev/discover-workload/discovery"
 )
 
 func TestManifestJSONProcessor(t *testing.T) {
+	t.Parallel()
 	testcases := map[string]struct {
 		ctx      context.Context
 		input    []corev1.Pod
@@ -79,6 +81,7 @@ func TestManifestJSONProcessor(t *testing.T) {
 }
 
 func TestContainerProcessing(t *testing.T) {
+	t.Parallel()
 	testcases := map[string]struct {
 		input    corev1.Pod
 		expected []discovery.DiscoveredImage

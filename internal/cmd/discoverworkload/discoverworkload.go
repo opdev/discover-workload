@@ -9,12 +9,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/opdev/discover-workload/internal/discover"
-	"github.com/opdev/discover-workload/internal/version"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/opdev/discover-workload/internal/discover"
+	"github.com/opdev/discover-workload/internal/version"
 )
 
 const (

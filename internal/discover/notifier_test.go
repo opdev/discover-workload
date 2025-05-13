@@ -48,7 +48,7 @@ func TestStartNotifier_NotificationCountGivenTimespan(t *testing.T) {
 }
 
 func TestStartNotifier_EarlyCancelation(t *testing.T) {
-	// a shorter timeout than the start point gaurantees a cancelation before
+	// a shorter timeout than the start point guarantees a cancelation before
 	// any notifications will be emitted.
 	ctx, cancel := context.WithTimeout(context.TODO(), 1*time.Millisecond)
 	defer cancel()

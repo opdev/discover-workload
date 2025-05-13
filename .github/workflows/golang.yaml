@@ -1,0 +1,40 @@
+name: Golang
+
+on:
+  workflow_call: {}
+  workflow_dispatch: {}
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+
+    - name: Tidy
+      run: make ci.tidy
+
+    - name: Vet
+      run: make vet
+
+    - name: Format
+      run: make ci.fmt
+
+    - name: Lint
+      run: make lint
+
+    - name: Test
+      run: make cover
+
+  #  - name: Coveralls
+  #    uses: coverallsapp/github-action@v2
+  #    with:
+  #      github-token: ${{ secrets.GITHUB_TOKEN }}
+  #      file: coverage.out
+
+    - name: Build
+      run: make build

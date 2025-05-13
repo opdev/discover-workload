@@ -7,8 +7,9 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/opdev/discover-workload/discovery"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/opdev/discover-workload/discovery"
 )
 
 // NewManifestJSONProcessorFn produces a ProcessingFunction that will write a

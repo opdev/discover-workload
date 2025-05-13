@@ -1,7 +1,6 @@
 module github.com/opdev/discover-workload
 
-go 1.22.6
-toolchain go1.24.1
+go 1.23.5
 
 require (
 	github.com/spf13/cobra v1.8.1
