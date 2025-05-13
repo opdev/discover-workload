@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: daily
+    groups:
+      golang:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: "/.github"
+    schedule:
+      interval: weekly
+
