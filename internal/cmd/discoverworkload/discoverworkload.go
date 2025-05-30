@@ -103,7 +103,7 @@ func NewCommand(ctx context.Context) *cobra.Command {
 	c.SetContext(ctx)
 
 	flags := c.Flags()
-	flags.StringVarP(&cfg.LogLevel, "log-level", "v", "INFO", "How verbose you wont this tool to be")
+	flags.StringVarP(&cfg.LogLevel, "log-level", "v", "INFO", "How verbose you want this tool to be")
 	flags.DurationVarP(&cfg.Timeout, "duration", "d", 1*time.Minute, "How long this tool should continue to watch for workloads.")
 	flags.StringVarP(&cfg.KubeconfigPath, "kubeconfig", "k", clientcmd.RecommendedHomeFile, "The kubeconfig to use for cluster access.")
 	flags.StringVarP(&cfg.LabelSelector, "selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
