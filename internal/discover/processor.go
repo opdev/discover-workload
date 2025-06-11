@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -28,7 +29,7 @@ func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
 					continueRunning = false
 					break
 				}
-				m.DiscoveredImages = append(m.DiscoveredImages, processContainers(p, logger)...)
+				m = appendToManifest(m, processContainers(p, logger)...)
 			case <-ctx.Done():
 				logger.Debug("processorFn completing because the context completed")
 				continueRunning = false
@@ -64,9 +65,17 @@ func processContainers(
 		found = append(
 			found,
 			discovery.DiscoveredImage{
-				PodName:       p.Name,
-				ContainerName: c.Name,
-				Image:         c.Image,
+				Image: c.Image,
+				Containers: []discovery.DiscoveredContainer{
+					{
+						Name: c.Name,
+						Type: discovery.ContainerTypeStandard,
+						Pod: discovery.DiscoveredPod{
+							Name:      p.Name,
+							Namespace: p.Namespace,
+						},
+					},
+				},
 			},
 		)
 	}
@@ -76,9 +85,17 @@ func processContainers(
 		found = append(
 			found,
 			discovery.DiscoveredImage{
-				PodName:       p.Name,
-				ContainerName: c.Name,
-				Image:         c.Image,
+				Image: c.Image,
+				Containers: []discovery.DiscoveredContainer{
+					{
+						Name: c.Name,
+						Type: discovery.ContainerTypeInit,
+						Pod: discovery.DiscoveredPod{
+							Name:      p.Name,
+							Namespace: p.Namespace,
+						},
+					},
+				},
 			},
 		)
 	}
@@ -88,12 +105,45 @@ func processContainers(
 		found = append(
 			found,
 			discovery.DiscoveredImage{
-				PodName:       p.Name,
-				ContainerName: c.Name,
-				Image:         c.Image,
+				Image: c.Image,
+				Containers: []discovery.DiscoveredContainer{
+					{
+						Name: c.Name,
+						Type: discovery.ContainerTypeEphemeral,
+						Pod: discovery.DiscoveredPod{
+							Name:      p.Name,
+							Namespace: p.Namespace,
+						},
+					},
+				},
 			},
 		)
 	}
 
 	return found
+}
+
+func appendToManifest(m discovery.Manifest, images ...discovery.DiscoveredImage) discovery.Manifest {
+	for _, image := range images {
+		idx := slices.IndexFunc(m.DiscoveredImages, func(i discovery.DiscoveredImage) bool {
+			return i.Image == image.Image
+		})
+
+		if idx == -1 {
+			m.DiscoveredImages = append(m.DiscoveredImages, image)
+			continue
+		}
+
+		for _, container := range image.Containers {
+			if !slices.Contains(m.DiscoveredImages[idx].Containers, container) {
+				m.DiscoveredImages[idx].Containers = append(m.DiscoveredImages[idx].Containers, container)
+			}
+		}
+	}
+
+	return m
+}
+
+func imagesEqual(i1, i2 discovery.DiscoveredImage) bool {
+	return i1.Image == i2.Image && slices.Equal(i1.Containers, i2.Containers)
 }
