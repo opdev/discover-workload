@@ -13,10 +13,14 @@ import (
 	"github.com/opdev/discover-workload/discovery"
 )
 
+type NewManifestJSONProcessorFnOptions struct {
+	CompactOutput bool
+}
+
 // NewManifestJSONProcessorFn produces a ProcessingFunction that will write a
 // Manifest in JSON to out. This Processor finds all images from containers,
 // initContainers, and ephemeralContainers.
-func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
+func NewManifestJSONProcessorFn(out io.Writer, opts NewManifestJSONProcessorFnOptions) ProcessingFunction {
 	return func(ctx context.Context, source <-chan *corev1.Pod, logger *slog.Logger) error {
 		m := discovery.Manifest{}
 
@@ -41,7 +45,14 @@ func NewManifestJSONProcessorFn(out io.Writer) ProcessingFunction {
 			return nil
 		}
 
-		manifestJSON, err := json.Marshal(m)
+		var manifestJSON []byte
+		var err error
+		if opts.CompactOutput {
+			manifestJSON, err = json.Marshal(m)
+		} else {
+			manifestJSON, err = json.MarshalIndent(m, "", "    ")
+		}
+
 		if err != nil {
 			logger.Error("unable to convert output manifest to JSON", "errMsg", err)
 			return err

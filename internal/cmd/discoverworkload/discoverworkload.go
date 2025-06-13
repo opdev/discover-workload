@@ -33,6 +33,7 @@ type config struct {
 	KubeconfigPath string
 	LabelSelector  string
 	FieldSelector  string
+	CompactOutput  bool
 }
 
 func NewCommand(ctx context.Context) *cobra.Command {
@@ -73,6 +74,10 @@ func NewCommand(ctx context.Context) *cobra.Command {
 			go discover.StartNotifier(ctx, logger, 15*time.Second, 30*time.Second)
 
 			logger.Info("starting to watch for workloads", "duration", cfg.Timeout)
+
+			opts := discover.NewManifestJSONProcessorFnOptions{
+				CompactOutput: cfg.CompactOutput,
+			}
 			err = discover.WatchForWorkloads(
 				ctx,
 				logger,
@@ -82,7 +87,7 @@ func NewCommand(ctx context.Context) *cobra.Command {
 					FieldSelector: cfg.FieldSelector,
 				},
 				k8sclient,
-				discover.NewManifestJSONProcessorFn(os.Stdout),
+				discover.NewManifestJSONProcessorFn(os.Stdout, opts),
 			)
 			if err != nil {
 				switch {
@@ -108,6 +113,7 @@ func NewCommand(ctx context.Context) *cobra.Command {
 	flags.StringVarP(&cfg.KubeconfigPath, "kubeconfig", "k", clientcmd.RecommendedHomeFile, "The kubeconfig to use for cluster access.")
 	flags.StringVarP(&cfg.LabelSelector, "selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
 	flags.StringVar(&cfg.FieldSelector, "field-selector", "", "Selector (field query) to filter on, supports '=', '==', and '!='.(e.g. --field-selector key1=value1,key2=value2). The server only supports a limited number of field queries per type.")
+	flags.BoolVarP(&cfg.CompactOutput, "compact", "c", false, "Print JSON in compact format instead of pretty-printed output")
 
 	return c
 }

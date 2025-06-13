@@ -13,7 +13,7 @@ import (
 	"github.com/opdev/discover-workload/discovery"
 )
 
-func TestManifestInsert(t *testing.T) {
+func TestManifestAppend(t *testing.T) {
 	t.Parallel()
 	testcases := map[string]struct {
 		ctx      context.Context
@@ -391,6 +391,7 @@ func TestManifestJSONProcessor(t *testing.T) {
 	testcases := map[string]struct {
 		ctx      context.Context
 		input    []corev1.Pod
+		compact  bool
 		expected []byte
 	}{
 		"initContainer only": {
@@ -408,7 +409,26 @@ func TestManifestJSONProcessor(t *testing.T) {
 					},
 				},
 			},
-			expected: []byte("{\"DiscoveredImages\":[{\"Image\":\"example.com/namespace/image:0.0.1\",\"Containers\":[{\"Name\":\"init-cname\",\"Type\":\"InitContainer\",\"Pod\":{\"Name\":\"init-podname\",\"Namespace\":\"\"}}]}]}\n"),
+			compact:  false,
+			expected: []byte("{\n    \"DiscoveredImages\": [\n        {\n            \"Image\": \"example.com/namespace/image:0.0.1\",\n            \"Containers\": [\n                {\n                    \"Name\": \"init-cname\",\n                    \"Type\": \"InitContainer\",\n                    \"Pod\": {\n                        \"Name\": \"init-podname\",\n                        \"Namespace\": \"\"\n                    }\n                }\n            ]\n        }\n    ]\n}\n"),
+		},
+		"with raw printed JSON": {
+			ctx: context.TODO(),
+			input: []corev1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "podname"},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  "cname",
+								Image: "example.com/namespace/image:0.0.1",
+							},
+						},
+					},
+				},
+			},
+			compact:  true,
+			expected: []byte("{\"DiscoveredImages\":[{\"Image\":\"example.com/namespace/image:0.0.1\",\"Containers\":[{\"Name\":\"cname\",\"Type\":\"Container\",\"Pod\":{\"Name\":\"podname\",\"Namespace\":\"\"}}]}]}\n"),
 		},
 	}
 
@@ -417,7 +437,10 @@ func TestManifestJSONProcessor(t *testing.T) {
 		t.Run(description, func(t *testing.T) {
 			t.Parallel()
 			buffer := bytes.NewBuffer([]byte{})
-			fn := NewManifestJSONProcessorFn(buffer)
+			opts := NewManifestJSONProcessorFnOptions{
+				CompactOutput: tc.compact,
+			}
+			fn := NewManifestJSONProcessorFn(buffer, opts)
 
 			ch := make(chan *corev1.Pod)
 
