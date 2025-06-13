@@ -394,6 +394,11 @@ func TestManifestJSONProcessor(t *testing.T) {
 		compact  bool
 		expected []byte
 	}{
+		"no pods": {
+			ctx:      context.TODO(),
+			input:    []corev1.Pod{},
+			expected: []byte{},
+		},
 		"initContainer only": {
 			ctx: context.TODO(),
 			input: []corev1.Pod{
@@ -461,7 +466,7 @@ func TestManifestJSONProcessor(t *testing.T) {
 			actual, err := io.ReadAll(buffer)
 
 			if testFnErr != nil {
-				t.Fatalf("processor function threw an error unexpectedly: %q", err)
+				t.Fatalf("processor function threw an error unexpectedly: %q", testFnErr)
 			}
 
 			if err != nil {
