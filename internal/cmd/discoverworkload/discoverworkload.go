@@ -1,6 +1,7 @@
 package discoverworkload
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -79,6 +80,8 @@ func NewCommand(ctx context.Context) *cobra.Command {
 
 			go gracefulShutdown(cancel)
 
+			var buffer bytes.Buffer
+
 			opts := discover.NewManifestJSONProcessorFnOptions{
 				CompactOutput: cfg.CompactOutput,
 			}
@@ -91,7 +94,7 @@ func NewCommand(ctx context.Context) *cobra.Command {
 					FieldSelector: cfg.FieldSelector,
 				},
 				k8sclient,
-				discover.NewManifestJSONProcessorFn(os.Stdout, opts),
+				discover.NewManifestJSONProcessorFn(&buffer, opts),
 			)
 			if err != nil {
 				switch {
@@ -103,6 +106,12 @@ func NewCommand(ctx context.Context) *cobra.Command {
 					cancel()
 					return err
 				}
+			}
+
+			_, err = buffer.WriteTo(cmd.OutOrStdout())
+			if err != nil {
+				logger.Error("failed to write manifest output", "errMsg", err)
+				return err
 			}
 
 			cancel()
