@@ -475,6 +475,60 @@ func TestManifestJSONProcessor(t *testing.T) {
 	}
 }
 
+func TestManifestJSONProcessorContextCancelled(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.TODO())
+	input := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Name: "pod-1"},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  "cname",
+					Image: "example.com/namespace/image:0.0.1",
+				},
+			},
+		},
+	}
+	expected := []byte("{\"DiscoveredImages\":[{\"Image\":\"example.com/namespace/image:0.0.1\",\"Containers\":[{\"Name\":\"cname\",\"Type\":\"Container\",\"Pod\":{\"Name\":\"pod-1\",\"Namespace\":\"\"}}]}]}\n")
+
+	testLogger := NewSlogDiscardLogger()
+	buffer := bytes.NewBuffer([]byte{})
+	opts := NewManifestJSONProcessorFnOptions{
+		CompactOutput: true,
+	}
+	fn := NewManifestJSONProcessorFn(buffer, opts)
+
+	ch := make(chan *corev1.Pod)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var testFnErr error
+	go func() {
+		defer wg.Done()
+		testFnErr = fn(ctx, ch, testLogger)
+	}()
+
+	// If the context is cancelled prematurely, the function should
+	// still output JSON for what has already been processed.
+	ch <- &input
+	cancel()
+
+	wg.Wait()
+	actual, err := io.ReadAll(buffer)
+
+	if testFnErr != nil {
+		t.Fatalf("processor function threw an error unexpectedly: %q", testFnErr)
+	}
+
+	if err != nil {
+		t.Fatalf("unable to read output written to buffer: %q", err)
+	}
+
+	if !bytes.Equal(actual, expected) {
+		t.Fatalf("ManifestJSONPrinter processing function returned the wrong output. actual: %q expected %q", actual, expected)
+	}
+}
+
 func TestContainerProcessing(t *testing.T) {
 	t.Parallel()
 	testcases := map[string]struct {

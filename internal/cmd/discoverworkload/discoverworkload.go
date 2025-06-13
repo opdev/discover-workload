@@ -7,6 +7,8 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -75,6 +77,8 @@ func NewCommand(ctx context.Context) *cobra.Command {
 
 			logger.Info("starting to watch for workloads", "duration", cfg.Timeout)
 
+			go gracefulShutdown(cancel)
+
 			opts := discover.NewManifestJSONProcessorFnOptions{
 				CompactOutput: cfg.CompactOutput,
 			}
@@ -142,4 +146,11 @@ func newLogger(level string, out io.Writer) (*slog.Logger, error) {
 	}
 
 	return logger, nil
+}
+
+func gracefulShutdown(cancel context.CancelFunc) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	cancel()
 }
