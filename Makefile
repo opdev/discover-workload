@@ -14,7 +14,9 @@ run:
 .PHONY: bin build
 bin build:
 	CGO_ENABLED=0 go build -o $(BIN_NAME) \
+		-trimpath \
 		-ldflags "\
+			-s -w \
 			-X github.com/opdev/discover-workload/internal/version.Commit=$(COMMIT) \
 			-X github.com/opdev/discover-workload/internal/version.Version=$(BIN_VERSION)" \
 		internal/cmd/main/discover-workload.go
