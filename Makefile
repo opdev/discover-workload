@@ -63,13 +63,13 @@ lint: install.golangci-lint
 
 # gofumpt
 GOFUMPT = $(BIN_DIR)/gofumpt
-GOFUMPT_VERSION ?= latest
+GOFUMPT_VERSION ?= v0.9.1
 install.gofumpt:
 	$(call go-install-tool,$(GOFUMPT),mvdan.cc/gofumpt@$(GOFUMPT_VERSION))
 
 # golangci-lint
 GOLANGCI_LINT = $(BIN_DIR)/golangci-lint
-GOLANGCI_LINT_VERSION ?= v2.1.6
+GOLANGCI_LINT_VERSION ?= v2.4.0
 install.golangci-lint:
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION))
 
