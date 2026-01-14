@@ -1,3 +1,5 @@
+**Deprecation Notice**: This project will be archived by 2026-02.
+
 # Discover Workload
 
 An command line interface for extracting certifiable components from an
